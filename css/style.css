@@ -1,0 +1,12 @@
+#output-container {
+    display: flex;
+    /* justify-content: center; */
+    flex-wrap: wrap;
+    padding: 3px;
+    justify-content: space-around;
+}
+
+#loading {
+    display: none;
+
+}
