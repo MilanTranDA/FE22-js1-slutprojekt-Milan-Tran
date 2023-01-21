@@ -6,33 +6,39 @@ btn.addEventListener('click', searchItems);
 // Function to handle the search button click event
 function searchItems(event) {
   event.preventDefault();
-  
+
   const input = document.querySelector('#input-text');
   const searchTerm = input.value.trim();  // Trim any leading or trailing white space from the search term
-  
+
   // Check if the search term is empty
   if (!searchTerm) {
     // If the search term is empty, show an error message and return from the function
     alert('Please enter a search term in order to search');
     return;
   }
-  
+
+  if (!/^[a-zA-Z]+$/.test(searchTerm)) {
+    // If the search term is not a word, show an error message and return from the function
+    alert('Please enter a valid word');
+    return;
+  }
+
   // Start the loading animation
   document.querySelector('#loading').style.display = 'block';
   loadingAnimation.play();
-  
+
   input.value = '';
-  
+
   const numInput = document.querySelector('#num-images');
   const numImages = numInput.value;
   numInput.value = '';
-  
+
   const sizeInput = document.querySelector('#image-size');
   const size = sizeInput.value;
-  
+
   const sortInput = document.querySelector('#sort-order');
   const sortOrder = sortInput.value;
-  
+
   console.log(numImages, searchTerm, size, sortOrder);
   fetchSearch(searchTerm, numImages, size, sortOrder);
 }
@@ -41,16 +47,23 @@ function searchItems(event) {
 
 // Helper function to build the URL for the Flickr API request
 
-function buildFlickrUrl(searchTerm, numImages, size) {
+function buildFlickrUrl(searchTerm, numImages, size, sortOrder) {
   const baseUrl = 'https://www.flickr.com/services/rest/';
   const apiKey = '11ba514af7e0cb2ac8870a45aa34ff59';
-  return `${baseUrl}?method=flickr.photos.search&api_key=${apiKey}&text=${searchTerm}&per_page=${numImages}&size=${size}&format=json&nojsoncallback=1`;
+  let sortParameter = '';
+  if (sortOrder === 'relevance') {
+    sortParameter = '&sort=relevance';
+  } else if (sortOrder === 'interestingness') {
+    sortParameter = '&sort=interestingness';
+  }
+  return `${baseUrl}?method=flickr.photos.search&api_key=${apiKey}&text=${searchTerm}&per_page=${numImages}&size=${size}&format=json&nojsoncallback=1${sortParameter}`;
 }
+
 
 console.log(buildFlickrUrl);
 // Function to make the fetch request to the Flickr API
 function fetchSearch(searchTerm, numImages, size, sortOrder) {
-  const url = buildFlickrUrl(searchTerm, numImages, size);
+  const url = buildFlickrUrl(searchTerm, numImages, size, sortOrder);
 
   try {
     fetch(url)
@@ -63,6 +76,8 @@ function fetchSearch(searchTerm, numImages, size, sortOrder) {
 document.querySelector('#output-container').innerHTML = '';
 
 function displayInfo(itemdata, size, sortOrder) {
+  // Clear the output container
+  document.querySelector('#output-container').innerHTML = '';
   // Define the photos array
   loadingAnimation.pause();
   let photos = itemdata.photos.photo;
@@ -72,11 +87,17 @@ function displayInfo(itemdata, size, sortOrder) {
     photos.sort((a, b) => a.title.localeCompare(b.title));
   } else if (sortOrder === 'descending') {
     photos.sort((a, b) => b.title.localeCompare(a.title));
+  } else if (sortOrder === 'relevance') {
+    // Sort the photos by relevance
+  } else if (sortOrder === 'interestingness') {
+    // Sort the photos by interestingness
   }
-  if (itemdata.photos === undefined) {
-    console.error('Error: photos object is undefined');
+  if (photos.length === 0) {
+    alert('No images found for the search term, try another word');
+    document.querySelector('#loading').style.display = 'none';
     return;
   }
+
 
   document.querySelector('#output-container').innerHTML = '';
   for (const photo of photos) {
