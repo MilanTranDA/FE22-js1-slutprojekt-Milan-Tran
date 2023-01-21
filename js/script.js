@@ -16,13 +16,6 @@ function searchItems(event) {
     alert('Please enter a search term in order to search');
     return;
   }
-
-  if (!/^[a-zA-Z]+$/.test(searchTerm)) {
-    // If the search term is not a word, show an error message and return from the function
-    alert('Please enter a valid word');
-    return;
-  }
-
   // Start the loading animation
   document.querySelector('#loading').style.display = 'block';
   loadingAnimation.play();
